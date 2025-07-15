@@ -6,7 +6,8 @@ default: writer.c
 	$(GCC) writer.c -o writer
 
 CROSS_COMPILE:writer.c
-	$(CC) $(FLAGS) writer.c -o writer.o
+#	$(CC) $(FLAGS) writer.c -o writer
+	$(CC) writer.c -o writer
 
 clean:
 	rm -f writer *.o
