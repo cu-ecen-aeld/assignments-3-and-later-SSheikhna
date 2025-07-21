@@ -7,7 +7,7 @@ default: writer.c
 
 all: writer.c
 	$(GCC) writer.c -o writer
-	$(CC) writer.c -o writer
+	$(CC) writer.c -o writer.o
 
 
 CROSS_COMPILE:writer.c
