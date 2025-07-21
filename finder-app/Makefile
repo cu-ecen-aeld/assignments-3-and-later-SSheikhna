@@ -5,6 +5,11 @@ FLAGS=-g -Wall -c
 default: writer.c
 	$(GCC) writer.c -o writer
 
+all: writer.c
+	$(GCC) writer.c -o writer
+	$(CC) writer.c -o writer
+
+
 CROSS_COMPILE:writer.c
 #	$(CC) $(FLAGS) writer.c -o writer
 	$(CC) writer.c -o writer
