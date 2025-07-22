@@ -8,8 +8,8 @@ set -u
 NUMFILES=10
 WRITESTR=AELD_IS_FUN
 WRITEDIR=/tmp/aeld-data
-CWD=$(pwd)
-if [ "$CWD" = "/root"  ]; then
+
+if [ $LOGNAME = "root"  ]; then
 	CONF=/etc/finder-app/conf
 else
 	CONF=conf
@@ -61,14 +61,15 @@ fi
 
 for i in $( seq 1 $NUMFILES)
 do
-	if [ "$CWD" = "/root"  ]; then
+	if [ $LOGNAME = "root"  ]; then
 		writer.o "$WRITEDIR/${username}$i.txt" "$WRITESTR"
 	else
 		./writer "$WRITEDIR/${username}$i.txt" "$WRITESTR"
 	fi
+
 done
 
-if [ "$CWD" = "/root"  ]; then
+if [ $LOGNAME = "root"  ]; then
 	OUTPUTSTRING=$(finder.sh "$WRITEDIR" "$WRITESTR")
 else
 	OUTPUTSTRING=$(./finder.sh "$WRITEDIR" "$WRITESTR")
