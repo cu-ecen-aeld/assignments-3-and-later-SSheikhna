@@ -12,7 +12,7 @@ all: writer.c
 
 CROSS_COMPILE:writer.c
 #	$(CC) $(FLAGS) writer.c -o writer
-	$(CC) writer.c -o writer
+	$(CC) writer.c -o writer.o
 
 clean:
 	rm -f writer *.o
