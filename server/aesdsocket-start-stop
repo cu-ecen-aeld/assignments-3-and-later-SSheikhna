@@ -1,0 +1,27 @@
+#!/bin/sh
+
+SERVER_DIR=$(realpath $(dirname $0))
+
+case "$1" in
+  start)
+    echo "Starting $SERVER_DIR/aesdsocket - $LOGNAME"
+    if [ "$LOGNAME" = "ssheikhna"  ]; then
+      start-stop-daemon -S -n aesdsocket -a $SERVER_DIR/aesdsocket -- -d
+    else
+      start-stop-daemon -S -n aesdsocket -a aesdsocket.o -- -d
+    fi
+    ;;
+  stop)
+    echo "Stoping $SERVER_DIR/aesdsocket"
+    if [ "$LOGNAME" = "ssheikhna"  ]; then
+      start-stop-daemon -K -n aesdsocket
+    else
+      start-stop-daemon -K -n aesdsocket.o
+    fi
+    ;;
+  *)
+  echo "Usage: $0 {start|stop}"
+  exit 1
+esac
+
+exit 0
