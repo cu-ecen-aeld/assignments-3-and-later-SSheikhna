@@ -33,11 +33,6 @@ typedef struct thread_data{
 
 pthread_mutex_t threads_general_mutex;
 
-typedef struct thread_data2{
-  pthread_t  thread_id;
-  pthread_mutex_t thread_mutex;
-}thread_data_t2;
-
 struct socket_init_data{
   int *serverfd;
   int *epollfd;
@@ -125,6 +120,7 @@ bool write_to_file(char buffer[], int length)
   if (bytes_written < 0)
   {
     syslog(LOG_ERR, "Error writing to %s", TMP_FILE);
+    close(my_file);
     lock_unlock_mutex(false);
     return false;
   }
@@ -176,6 +172,7 @@ int read_file_and_send_to_client(thread_data_t *thread)
     if (bytesSent == -1)
     {
       syslog(LOG_ERR, "Error sending %s to %d", TMP_FILE, thread->thread_client_addr.sin_addr.s_addr);
+      close(my_file);
       lock_unlock_mutex(false);
       return -1;
     }
@@ -212,7 +209,6 @@ int set_to_non_blocking(int socket)
   if (ret >= 0) ret = fcntl(socket, F_SETFL, ret | O_NONBLOCK);
   return ret;
 }
-
 
 
 int initialize_server(int *serverfd, struct sockaddr_in *serverfd_addr, int *epollfd, struct epoll_event *event, int argc, char *argv[])
@@ -368,45 +364,6 @@ bool start_thread(int *client, struct sockaddr_in *client_addr)
   return true;
 }
 
-bool start_thread2(int *client, struct sockaddr_in *client_addr)
-{
-  int ret;
-  thread_data_t *my_thread_data = malloc(sizeof(thread_data_t));
-  if (!my_thread_data)
-  {
-    syslog(LOG_ERR, "thread_data_t malloc failed");
-    return false;
-  }
-  my_thread_data->thread_client = *client;
-  my_thread_data->thread_client_addr = *client_addr;
-  my_thread_data->flag = false;
-  ret = pthread_create(&my_thread_data->thread_id, NULL, thread_hanlder, my_thread_data);
-  if (ret != 0)
-  {
-    syslog(LOG_ERR, "pthread_create failed");
-    free(my_thread_data);
-    return false;
-  }
-  node_t *my_node = malloc(sizeof(*my_node));
-  if (my_node == NULL)
-  {
-    syslog(LOG_ERR, "node_t malloc failed");
-    return false;
-  }
-  my_node->thread = my_thread_data;
-  if (!lock_unlock_mutex(true)) return false;
-  TAILQ_INSERT_TAIL(&head, my_node, nodes);
-  if (!lock_unlock_mutex(false)) return false;
-  node_t *node_obj;
-  TAILQ_FOREACH(node_obj, &head, nodes)
-  {
-    if (node_obj->thread->flag == false) return false;
-  }
-  ret = pthread_join(my_node->thread->thread_id, NULL);
-  *client = 0; //tmp
-  return true;
-}
-
 
 int main(int argc, char *argv[])
 {
@@ -469,8 +426,8 @@ int main(int argc, char *argv[])
   while (!TAILQ_EMPTY(&head))
   {
     my_node = TAILQ_FIRST(&head);
-    if (!pthread_join(my_node->thread->thread_id, NULL)) free(my_node->thread);
     TAILQ_REMOVE(&head, my_node, nodes);
+    free(my_node->thread);
     free(my_node);
   }
   if (!pthread_join(thread_id, NULL)) pthread_mutex_destroy(&threads_general_mutex);
